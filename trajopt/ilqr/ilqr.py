@@ -139,7 +139,7 @@ class iLQR:
         _return = self.last_return
 
         for i in range(nb_iter):
-            print(i)
+            print(i, _return)
             _trace.append(_return)
             # eval controller on true system
             c =  np.sum(self.forward_pass(self.ctl, 0.0)[2])
