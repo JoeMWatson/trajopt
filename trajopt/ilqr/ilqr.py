@@ -65,7 +65,7 @@ class iLQR:
 
         self.dyn = AnalyticalLinearDynamics(self.env_init, self.env_dyn, self.nb_xdim, self.nb_udim, self.nb_steps)
         self.ctl = LinearControl(self.nb_xdim, self.nb_udim, self.nb_steps)
-        self.ctl.kff = 1e-2 * np.random.randn(self.nb_udim, self.nb_steps)
+        # self.ctl.kff = 1e-2 * np.random.randn(self.nb_udim, self.nb_steps)
 
         # activation of cost function
         self.activation = np.zeros((self.nb_steps + 1,), dtype=np.int64)
@@ -124,6 +124,7 @@ class iLQR:
 
     def run(self, nb_iter=25):
         _trace = []
+        _trace_real = []
         # init trajectory
         for alpha in self.alphas:
             _state, _action, _cost = self.forward_pass(self.ctl, alpha)
@@ -135,9 +136,14 @@ class iLQR:
             else:
                 print("Initial trajectory diverges")
 
-        _trace.append(self.last_return)
+        _return = self.last_return
 
-        for _ in range(nb_iter):
+        for i in range(nb_iter):
+            print(i)
+            _trace.append(_return)
+            # eval controller on true system
+            c =  np.sum(self.forward_pass(self.ctl, 0.0)[2])
+            _trace_real.append(c)
             # get linear system dynamics around ref traj.
             self.dyn.taylor_expansion(self.xref, self.uref)
 
@@ -203,7 +209,7 @@ class iLQR:
 
                 self.ctl = lc
 
-                _trace.append(self.last_return)
+                
 
                 # terminate if reached objective tolerance
                 if _dreturn < self.tolfun:
@@ -217,4 +223,9 @@ class iLQR:
                 else:
                     continue
 
-        return _trace
+        _trace.append(_return)
+        # eval controller on true system
+        c =  np.sum(self.forward_pass(self.ctl, 0.0)[2])
+        _trace_real.append(c)
+
+        return _trace, _trace_real
