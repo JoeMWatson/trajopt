@@ -218,8 +218,10 @@ class MBGPS:
         # mean objective under current dists.
         self.last_return = np.sum(_cost)
         _trace.append(self.last_return)
+        _return = self.last_return
 
-        for _ in range(nb_iter):
+        for i in range(nb_iter):
+            print(i, _return)
             # get quadratic cost around mean traj.
             self.cost.taylor_expansion(self.xdist.mu, self.udist.mu, self.activation)
 
